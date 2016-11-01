@@ -110,9 +110,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="dane_stat.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="rozklad.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dane_stat.hpp" />
