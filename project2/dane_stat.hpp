@@ -1,5 +1,6 @@
 #pragma once
 
+
 #include <string>
 #include <vector>
 #include <memory>
@@ -59,10 +60,8 @@ public:
 	DaneStatProxy(const std::string nazwa) : DaneStat(nazwa), dane_stat(nullptr) {};
 	const std::vector <float> &dane() override {
 		if (!dane_stat) dane_stat = std::make_shared<DaneStatReal>(DaneStatReal(nazwa_));
+
 		if (!dane_stat) throw std::string("puste dane_stat!\n");
 		return dane_stat->dane();
 	}
 };
-
-
-
