@@ -4,11 +4,17 @@
 #include <vector>
 #include <math.h>
 #include <algorithm>
-#include <sstream>
+
+
+enum class Parametr {
+	mean,
+	variance,
+	standard_deviation,
+};
 
 
 // Mapa przechowujaca obliczone estymatory rozkladu: opis-wartosc
-typedef std::map <std::string, float> ParametryRozkladu;
+typedef std::map <Parametr, float> ParametryRozkladu;
 
 
 class Rozklad // ATD - klasa bazowa dla "obliczaczy" estymatorow
@@ -26,6 +32,23 @@ protected:
 	// przechowuje referencje na dane do analizy
 	const std::vector <float> &dane_;
 
+	void  parametry_std(ParametryRozkladu &parametry) const {
+
+		parametry[Parametr::mean] = 0.f;
+		for (auto obj : dane_) {
+			parametry[Parametr::mean] += obj;
+		}
+		parametry[Parametr::mean] /= dane_.size();
+
+		parametry[Parametr::variance] = 0.f;
+		auto odh = [&parametry](float x) {
+			parametry[Parametr::variance] += pow(x - parametry[Parametr::mean], 2);
+		};
+		std::for_each(dane_.begin(), dane_.end(), odh);
+		parametry[Parametr::variance] /= dane_.size();
+		parametry[Parametr::standard_deviation] = sqrtf(parametry[Parametr::variance]);
+
+	}
 };
 
 
@@ -40,32 +63,7 @@ public:
 	std::unique_ptr <ParametryRozkladu> oblicz() const override {
 		ParametryRozkladu parametry;
 
-		float mean = 0.f;
-		for (auto obj : dane_) {
-			mean += obj;
-		}
-		mean /= dane_.size();
-
-
-		std::stringstream ss;
-		std::string s;
-		char c = (char)230;
-		ss << c;
-		ss >> s;
-
-		parametry[s] = mean;
-
-		float odchylenie = 0.f;
-		auto odh = [&odchylenie, mean](float x) {
-			odchylenie += pow(x - mean, 2);
-		};
-		std::for_each(dane_.begin(), dane_.end(), odh);
-		odchylenie /= dane_.size();
-		odchylenie = sqrtf(odchylenie);
-		c = (char)229;
-		ss << c;
-		ss >> s;
-		parametry[s] = odchylenie;
+		parametry_std(parametry);
 
 		return std::make_unique<ParametryRozkladu>(parametry);
 	}
@@ -73,6 +71,29 @@ public:
 	// statyczna met. tworzaca i zwracajaca wskaznik na obiekt wlasnego typu
 	static Rozklad *kreator(const std::vector <float> &dane) {
 		return new RozkladGaussa(dane);
+	};
+};
+
+
+class RozkladLorentza : public Rozklad
+{
+
+public:
+	// nie robi nic sensownego poza wywolaniem konstr. klasy bazowej z odpowiednim parametrem
+	explicit RozkladLorentza(const std::vector <float> &dane) : Rozklad(dane) {};
+	~RozkladLorentza() {};
+	// liczy wartosc srednia i odchylenie standardowe
+	std::unique_ptr <ParametryRozkladu> oblicz() const override {
+		ParametryRozkladu parametry;
+
+		parametry_std(parametry);
+
+		return std::make_unique<ParametryRozkladu>(parametry);
+	}
+
+	// statyczna met. tworzaca i zwracajaca wskaznik na obiekt wlasnego typu
+	static Rozklad *kreator(const std::vector <float> &dane) {
+		return new RozkladLorentza(dane);
 	};
 };
 
@@ -85,7 +106,7 @@ typedef Rozklad* (*KreatorRozkladu)(const std::vector <float> &);
 class FabrykaRozkladow // FABRYKA! :)
 {
 
-	// przechowuje wskaüniki kreatorow (funkcji tworzπcych!)
+	// przechowuje wska≈∫niki kreatorow (funkcji tworzƒÖcych!)
 	static std::map <unsigned, KreatorRozkladu> rozklady;
 
 	// przechowuje nazwy rozkladow

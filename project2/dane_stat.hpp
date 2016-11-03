@@ -34,6 +34,7 @@ class DaneStatReal : public DaneStat
 public:
 	DaneStatReal(const std::string nazwa) : DaneStat(nazwa) {
 		std::ifstream in_file(nazwa);
+		dane_.reserve(1000000);
 		 float temp;
 		if (in_file.is_open()) {
 			while (in_file >> temp) {
@@ -52,7 +53,7 @@ public:
 };
 
 
-// proxy - wczytuje prawdziwy obiekt przy pierwszym uøyciu
+// proxy - wczytuje prawdziwy obiekt przy pierwszym u≈ºyciu
 class DaneStatProxy : public DaneStat
 {
 	std::shared_ptr<DaneStat> dane_stat;
